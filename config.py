@@ -4,14 +4,14 @@ from dotenv import load_dotenv
 
 
 # Подгрузка файла .env 
-dotenv_path = os.path.join(os.path.dirname(__file__), '.env')
-if os.path.exists(dotenv_path):
-    load_dotenv(dotenv_path)
+_dotenv_path = os.path.join(os.path.dirname(__file__), '.env')
+if os.path.exists(_dotenv_path):
+    load_dotenv(_dotenv_path)
 
 # Создание словаря значений
-config = dotenv_values()
+_config = dotenv_values()
 
 
 # Переменные для конфигурации
-TOKEN = config["BOT_TOKEN"]
+TOKEN = _config["BOT_TOKEN"]
 

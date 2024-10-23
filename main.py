@@ -3,11 +3,11 @@ import logging
 import sys
 from aiogram import Bot, Dispatcher, html
 from app.handlers import router
-from config import config
+from config import *
+from sqlalchemy.orm import Session
 
 
 async def main() -> None:
-    TOKEN = config["BOT_TOKEN"]
     dp = Dispatcher()
     dp.include_router(router)
     bot = Bot(token=TOKEN)

@@ -3,8 +3,11 @@ from aiogram.filters import CommandStart, Command
 from aiogram.types import Message
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.fsm.context import FSMContext
+from sqlalchemy.orm import Session
 
 import app.keyboards as kb
+
+from database import *
 
 
 class Register(StatesGroup):
@@ -52,10 +55,15 @@ async def reister_age(message: Message, state: FSMContext):
 async def reister_age(message: Message, state: FSMContext):
     await state.update_data(gender=message.text)
     data = await state.get_data()
-    await message.answer(f"Приятно с вами познакомиться, {data['name']}\n"
-                         f"Вам {data['age']} лет и вы {data['gender']}")
+    create_user(session, id=message.from_user.id, name=data['name'], age=int(data['age']), gender=data['gender'])
+    await message.answer("Данные успешно занесены", reply_markup=kb.remove)
     await state.clear()
 
+
+@router.message(Command(commands="me"))
+async def me(message: Message):
+    user = get_user(session, message.from_user.id)
+    await message.answer(user.name)
 
 @router.message()
 async def echo_handler(message: Message) -> None:
