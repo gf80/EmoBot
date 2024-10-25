@@ -4,3 +4,4 @@ venv/
 /__pycache__
 app/__pycache__
 emotional_health.db
+.idea
