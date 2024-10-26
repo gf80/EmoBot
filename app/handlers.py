@@ -1,24 +1,19 @@
 from aiogram import F, Router, html
 from aiogram.filters import CommandStart, Command
 from aiogram.types import Message
-from aiogram.fsm.state import State, StatesGroup
 from aiogram.fsm.context import FSMContext
 from sqlalchemy.orm import Session
-
+import app.polls as polls
 import app.keyboards as kb
 
 from database import *
 
-
-class Register(StatesGroup):
-    name = State()
-    age = State()
-    gender = State()
+from app.states import *
 
 
 router = Router()
 
-
+# Начальная команда start
 @router.message(CommandStart())
 async def command_start_handler(message: Message, state: FSMContext) -> None:
     await state.set_state(Register.name)
@@ -35,37 +30,80 @@ async def command_start_handler(message: Message, state: FSMContext) -> None:
                         )
     await message.answer("Давай познакомимся для начала. Скажи, как мне к тебе лучше обращаться? 😊")
 
-
-@router.message(Register.name)
-async def reister_name(message: Message, state: FSMContext):
-    await state.update_data(name=message.text)
-    await state.set_state(Register.age)
-    data = await state.get_data()
-    await message.answer(f"Хорошо, {data['name']}, Сколько Вам лет?")
-
-
-@router.message(Register.age)
-async def reister_age(message: Message, state: FSMContext):
-    await state.update_data(age=message.text)
-    await state.set_state(Register.gender)
-    await message.answer(f"Какого вы пола?", reply_markup=kb.gender_keyboard)
-
-
-@router.message(Register.gender)
-async def reister_age(message: Message, state: FSMContext):
-    await state.update_data(gender=message.text)
-    data = await state.get_data()
-    create_user(session, id=message.from_user.id, name=data['name'], age=int(data['age']), gender=data['gender'])
-    await message.answer("Данные успешно занесены", reply_markup=kb.remove)
-    await state.clear()
-
-
+# Обработка команды /me для вывода информации о пользователе
 @router.message(Command(commands="me"))
-async def me(message: Message):
+async def me_handler(message: Message):
     user = get_user(session, message.from_user.id)
-    await message.answer(user.name)
+    if user:
+        await message.answer(f"Ваши данные:\n"
+                             f"Имя: {user.name}\n"
+                             f"Возраст: {user.age}\n"
+                             f"Пол: {user.gender}")
+        await message.answer("Отлично, давай начнем исправлять твое эмоциональное состояние\n"
+                             "Вот, какие тесты я могу тебе предложить:\n\n"
+                             "/mood - Тест на настроение")
 
+# Старт теста на настроение
+@router.message(Command(commands="mood"))
+async def mood_handler(message: Message, state: FSMContext):
+    await state.set_state(Mood.first)
+    await message.answer("1. Как часто вы чувствуете себя бодрым и энергичным?", reply_markup=kb.mood_keyboard)
+
+# Команда для постороения графиков
+@router.message(Command(commands="graph"))
+async def graph_handler(message: Message, state: FSMContext):
+    tests = get_tests(session, message.from_user.id)
+    name_tests = [name["name"] for name in tests]
+    await message.answer("Выберите какой график вам показать", reply_markup=kb.graph_keyboard(name_tests))
+    await state.set_state(GraphSelection.waiting_for_test)
+
+# Создать граф
+@router.message(GraphSelection.waiting_for_test)
+async def graph_create_handler(message: Message, state: FSMContext):
+    await polls.graph_select.graph_create(message, state, session)
+
+# Обработка ввода имени
+@router.message(Register.name)
+async def register_name_handler(message: Message, state: FSMContext):
+    await polls.register.ask_age(message, state)
+
+# Обработка ввода возраста
+@router.message(Register.age)
+async def register_age_handler(message: Message, state: FSMContext):
+    await polls.register.ask_gender(message, state)
+
+# Обработка ввода пола и завершение регистрации
+@router.message(Register.gender)
+async def register_gender_handler(message: Message, state: FSMContext):
+    await polls.register.complete_registration(message, state, session)
+
+# Обработка ввода первого ответа
+@router.message(Mood.first)
+async def mood_first_handler(message: Message, state: State):
+    await polls.mood.first_question(message, state)
+
+# Обработка ввода второго ответа
+@router.message(Mood.second)
+async def mood_second_handler(message: Message, state: State):
+    await polls.mood.second_question(message, state)
+
+# Обработка ввода третьего ответа
+@router.message(Mood.third)
+async def mood_third_handler(message: Message, state: State):
+    await polls.mood.third_question(message, state)
+
+# Обработка ввода четвертого ответа
+@router.message(Mood.forth)
+async def mood_forth_handler(message: Message, state: State):
+    await polls.mood.forth_question(message, state)
+
+# Обработка ввода пятого ответа
+@router.message(Mood.fifth)
+async def mood_fifth_handler(message: Message, state: State):
+    await polls.mood.fifth_question(message, state, session)
+
+# Обработчик для всех остальных сообщений
 @router.message()
-async def echo_handler(message: Message) -> None:
-    pass
+async def echo_handler(message: Message):
+    await message.answer("Я не понимаю эту команду. Попробуйте /start или /me.")
 

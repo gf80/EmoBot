@@ -17,42 +17,27 @@ class User(Base):
     # Связь с результатами тестов
     results = relationship("Result", back_populates="user")
     
-    # Связь с таблицей UsersTests (многие ко многим через промежуточную таблицу)
-    tests = relationship("UsersTests", back_populates="user")
 
 # Модель Tests
 class Test(Base):
     __tablename__ = 'tests'
     
     id = Column(Integer, primary_key=True)
+    name = Column(String)
     content = Column(String)
 
     # Связь с результатами тестов
     results = relationship("Result", back_populates="test")
-    
-    # Связь с таблицей UsersTests (многие ко многим через промежуточную таблицу)
-    users = relationship("UsersTests", back_populates="test")
-
-# Модель связки Users и Tests
-class UsersTests(Base):
-    __tablename__ = 'users_tests'
-    
-    id_user = Column(Integer, ForeignKey('users.id'), primary_key=True)
-    id_test = Column(Integer, ForeignKey('tests.id'), primary_key=True)
-
-    # Связи с таблицами users и tests
-    user = relationship("User", back_populates="tests")
-    test = relationship("Test", back_populates="users")
     
 
 # Модель Results
 class Result(Base):
     __tablename__ = 'results'
     
-    id_user = Column(Integer, ForeignKey('users.id'), primary_key=True)
-    id_test = Column(Integer, ForeignKey('tests.id'), primary_key=True)
-    date_passed = Column(DateTime, default=datetime.utcnow)
-    score = Column(Float)
+    id_user = Column(Integer, ForeignKey('users.id'))
+    id_test = Column(Integer, ForeignKey('tests.id'))
+    date_passed = Column(DateTime, default=datetime.utcnow, primary_key=True)
+    score = Column(Integer)
 
     # Связи с таблицами users и tests
     user = relationship("User", back_populates="results")
@@ -83,5 +68,42 @@ def create_user(session, id, name, age, gender):
 
 def get_user(session, id):
     return session.query(User).filter(id==id).first()
+
+# Функция для создания результата по прохождению теста
+def create_result_test(session, id_user, id_test, score):
+    result = Result(id_user=id_user, id_test=id_test, score=score)
+    session.merge(result)
+    session.commit()
+    print(f"Тест {id_test} - {score}")
+
+
+def create_test(session, id, name, content):
+    test = Test(id=id, name=name, content=content)
+    session.merge(test)
+    session.commit()
+    print(f"Тест {name} добавлен!")
+
+
+def get_tests(session, id_user):
+    result = (
+        session.query(Test.id, Test.name)
+        .join(Result, Result.id_test == Test.id)
+        .filter(Result.id_user == id_user)
+        .distinct()
+        .all()
+    )
+    return [{"id": row.id, "name": row.name} for row in result]
+
+def get_results_last_month(session, id_user, id_test):
+    now = datetime.utcnow()
+    month_ago = now - timedelta(days=30)
+
+    results = session.query(Result).filter(
+        Result.id_user == id_user,
+        Result.id_test == id_test,
+        Result.date_passed >= month_ago
+    ).all()
+
+    return results
 
 session: Session = init_db()
