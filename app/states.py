@@ -18,4 +18,16 @@ class Mood(StatesGroup):
 
 # Класс выбора графика
 class GraphSelection(StatesGroup):
-    waiting_for_test = State()
+    graph_test = State()
+
+
+# Класс для опроса для круга баланса
+class CirculBalance(StatesGroup):
+    health = State()
+    finance = State()
+    work = State()
+    development = State()
+    family = State()
+    social = State()
+    relax = State()
+    spirituality = State()

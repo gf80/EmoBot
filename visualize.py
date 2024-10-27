@@ -1,15 +1,12 @@
 import numpy as np
 import matplotlib.pyplot as plt
-
-# Данные для диаграммы
-
-values = [1, 2, 2, 3, 4, 5, 6, 7]
-id_user = 1234
+import os
 
 
-def value_lab(val:list, id:int):
+async def get_circul_balance(val: list, id_user: int, id_test: int):
     # TODO Исправить разные псих проблемы
-    labels = ['Спорт', 'Тело', 'Работа', 'Отдых', 'Позитив', 'Негатив', 'Доброта', 'Злость']
+    labels = ['Здоровье и физическая форма', 'Карьера и самореализация', 'Финансы и материальная стабильность', 'Личностный рост и обучение', 
+              'Семья и близкие отношения', 'Социальная жизнь и друзья', 'Отдых и хобби', 'Духовность и внутренний комфорт']
     val = [v if v <= 10 else 10 for v in val]
     try:
         if len(labels) == len(val):
@@ -27,13 +24,13 @@ def value_lab(val:list, id:int):
             ax.set_xticks(angles[:-1])
             ax.set_xticklabels(labels)
 
-            plt.savefig(f'E:\HomeChill\EmoBot\EmoBot\images\{id}.png')
+            image_path = os.path.join(os.getcwd(), "images", f"{id_user}_{id_test}.png")
+
+            plt.savefig(image_path)
+            print(image_path)
+            return image_path
         else:
             print("Нет достаточных сведений о пользователи")
             return 0
     except ValueError:
         print(ValueError)
-
-
-value_lab(values, id_user)
-
