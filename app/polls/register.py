@@ -34,5 +34,9 @@ async def complete_registration(message: Message, state: FSMContext, session: Se
                          f"Возраст: {data['age']} лет\n"
                          f"Пол: {data['gender']}", 
                          reply_markup=kb.remove)
-    await message.answer("Данные успешно занесены.", reply_markup=kb.remove)
+    await message.answer("Отлично, давай начнем исправлять твое эмоциональное состояние\n"
+                             "Вот, какие тесты я могу тебе предложить:\n\n"
+                             "/mood - Тест на настроение\n"
+                             "/balance - Тест для круга баланса", 
+                             reply_markup=kb.remove)
     await state.clear()

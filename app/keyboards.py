@@ -12,11 +12,24 @@ mood_keyboard = ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text="Никогд
                                               [KeyboardButton(text="Почти всегда")]],
                                               resize_keyboard=True, input_field_placeholder="Выберите один из вариантов...")
 
-def graph_keyboard(tests: list):
-    buttons = [[KeyboardButton(text=test)] for test in tests]
-    graph_k = ReplyKeyboardMarkup(keyboard=buttons,
+balance_keyboard = ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text="0", )],
+                                              [KeyboardButton(text="1")],
+                                              [KeyboardButton(text="2")],
+                                              [KeyboardButton(text="3")],
+                                              [KeyboardButton(text="4")],
+                                              [KeyboardButton(text="5")],
+                                              [KeyboardButton(text="6")],
+                                              [KeyboardButton(text="7")],
+                                              [KeyboardButton(text="8")],
+                                              [KeyboardButton(text="9")],
+                                              [KeyboardButton(text="10")]],
+                                              resize_keyboard=True, input_field_placeholder="Выберите один из вариантов...")
+
+def get_keyboard(texts: list):
+    buttons = [[KeyboardButton(text=text)] for text in texts]
+    k = ReplyKeyboardMarkup(keyboard=buttons,
                                   resize_keyboard=True)
-    return graph_k
+    return k
 
 
 remove = ReplyKeyboardRemove()
