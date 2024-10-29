@@ -6,11 +6,14 @@ from app.handlers import router
 from config import *
 from sqlalchemy.orm import Session
 
+from config import Config
+
+config = Config()
 
 async def main() -> None:
     dp = Dispatcher()
     dp.include_router(router)
-    bot = Bot(token=TOKEN)
+    bot = Bot(token=config.BOT_TOKEN)
     await dp.start_polling(bot)
 
 

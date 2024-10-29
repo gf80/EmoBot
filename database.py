@@ -3,6 +3,8 @@ from sqlalchemy import create_engine, Column, Integer, String, ForeignKey, DateT
 from sqlalchemy.orm import relationship, declarative_base, sessionmaker, Session
 from datetime import datetime, timedelta
 
+from config import Config
+
 Base = declarative_base()
 
 # Модель User
@@ -46,14 +48,16 @@ class Result(Base):
 
 # Функция для создания/инициализации базы данных
 def init_db():
-    db_path = 'emotional_health.db'
+    # Загружаем конфигурацию
+    config = Config()
+    db_path = config.DATABASE_URL.replace("sqlite:///", "")  # Извлекаем путь к базе данных из DATABASE_URL
 
     # Проверяем, существует ли база данных
     if not os.path.exists(db_path):
-        engine = create_engine(f'sqlite:///{db_path}')
+        engine = create_engine(config.DATABASE_URL)
         Base.metadata.create_all(engine)  # Создаем таблицы, если базы нет
     else:
-        engine = create_engine(f'sqlite:///{db_path}')
+        engine = create_engine(config.DATABASE_URL)
 
     # Настройка сессии
     Session = sessionmaker(bind=engine)
