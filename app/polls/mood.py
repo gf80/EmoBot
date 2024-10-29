@@ -1,5 +1,5 @@
 import datetime
-from aiogram.types import Message
+from aiogram.types import Message, FSInputFile
 from aiogram.fsm.context import FSMContext
 from app.states import Mood
 
@@ -9,8 +9,8 @@ import app.keyboards as kb
 
 from help import get_score
 
-from database import create_result_test, create_test
-
+from database import create_result_test, create_test, get_tests, get_results_last_month
+from visualize import mood_diagramma
 
 _answers = ["Никогда", "Редко", "Довольно часто", "Почти всегда"]
 id_test = 1
@@ -80,3 +80,10 @@ async def fifth_question(message: Message, state: FSMContext, session: Session):
         await message.answer("Средний уровень настроения. Возможны колебания, но в целом настроение остается удовлетворительным.")
     else:
         await message.answer("Высокий уровень настроения. Вероятно, вы чувствуете себя позитивно большую часть времени.")
+
+    data = get_results_last_month(session, message.from_user.id, id_test)
+    date = [d['date_passed'] for d in data]
+    height = [d['score'] for d in data]
+
+    image_path = await mood_diagramma(message.from_user.id, id_test, date, height)
+    await message.answer_photo(photo=FSInputFile(image_path), caption="Вот ваш график!")

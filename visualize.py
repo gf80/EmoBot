@@ -4,7 +4,6 @@ import os
 
 
 async def get_circul_balance(val: list, id_user: int, id_test: int):
-    # TODO Исправить разные псих проблемы
     labels = ['Здоровье и физическая форма', 'Карьера и самореализация', 'Финансы и материальная стабильность', 'Личностный рост и обучение', 
               'Семья и близкие отношения', 'Социальная жизнь и друзья', 'Отдых и хобби', 'Духовность и внутренний комфорт']
     val = [v if v <= 10 else 10 for v in val]
@@ -34,3 +33,17 @@ async def get_circul_balance(val: list, id_user: int, id_test: int):
             return 0
     except ValueError:
         print(ValueError)
+
+
+async def mood_diagramma(id_user, id_test, date, height):
+    colors = ['red' if v <= 5 else 'yellow' if v <= 10 else 'green' for v in height]
+    plt.bar(date, height,  color=colors, edgecolor='black')
+    plt.ylim(0, 16)
+    plt.xlabel('Дата')
+    plt.ylabel('Настроение')
+
+    image_path = os.path.join(os.getcwd(), "images", f"{id_user}_{id_test}.png")
+
+    plt.savefig(image_path)
+    return image_path
+
